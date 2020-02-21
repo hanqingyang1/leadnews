@@ -6,6 +6,7 @@
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/heima-leadnews-behavior/pom.xml" />
+        <option value="$PROJECT_DIR$/heima-leadnews-admin/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

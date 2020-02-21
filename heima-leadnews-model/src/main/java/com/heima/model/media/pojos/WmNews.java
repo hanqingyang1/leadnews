@@ -25,4 +25,5 @@ public class WmNews {
     private Integer articleId;
     private String content;
     private String images; //图片用逗号分隔
+    private Short enable;//是否上下架
 }
