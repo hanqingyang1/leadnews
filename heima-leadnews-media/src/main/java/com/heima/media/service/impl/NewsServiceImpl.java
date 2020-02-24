@@ -1,7 +1,9 @@
 package com.heima.media.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.heima.common.kafka.messages.SubmitArticleAuthMessage;
 import com.heima.common.media.contants.WmMediaConstans;
+import com.heima.media.kafka.AdminMessageSender;
 import com.heima.media.service.NewsService;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
@@ -14,6 +16,7 @@ import com.heima.model.media.dtos.WmNewsPageReqDto;
 import com.heima.model.media.pojos.WmMaterial;
 import com.heima.model.media.pojos.WmNews;
 import com.heima.model.media.pojos.WmUser;
+import com.heima.model.mess.admin.SubmitArticleAuto;
 import com.heima.utils.threadlocal.WmThreadLocalUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -40,6 +43,9 @@ public class NewsServiceImpl implements NewsService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private AdminMessageSender adminMessageSender;
 
     @Value("${FILE_SERVER_URL}")
     private String fileServerUrl;
@@ -214,10 +220,19 @@ public class NewsServiceImpl implements NewsService {
         wmNews.setCreatedTime(new Date());
         wmNews.setSubmitedTime(new Date());
         wmNews.setEnable((short)1);
+        int temp = 0;
         if(wmNews.getId()==null){
-            wmNewsMapper.insertNewsForEdit(wmNews);
+            temp = wmNewsMapper.insertNewsForEdit(wmNews);
         }else{
-            wmNewsMapper.updateByPrimaryKey(wmNews);
+            temp = wmNewsMapper.updateByPrimaryKey(wmNews);
+        }
+
+        // 提交才进行发送消息
+        if(WmMediaConstans.WM_NEWS_SUMMIT_STATUS==type){
+            SubmitArticleAuto saa = new SubmitArticleAuto();
+            saa.setArticleId(wmNews.getId());
+            saa.setType(SubmitArticleAuto.ArticleType.WEMEDIA);
+            adminMessageSender.sendMessage(new SubmitArticleAuthMessage(saa));
         }
     }
 
